@@ -1,0 +1,22 @@
+# SpeakerDiarizationNode as a standalone Path 3 cdylib plugin.
+#
+# Identifies "who spoke when" in audio streams using pyannote-rs +
+# two ONNX models (segmentation + speaker embedding).
+#
+# Consumer manifest reference:
+#
+#   "plugins": ["speaker-diarization@v0.1.0"]
+#       (canonical-org shorthand → github.com/RemoteMedia-SDK/speaker-diarization)
+#
+#   "plugins": ["./plugins/libspeaker_diarization_plugin.so"]
+#       (local path)
+
+[plugin]
+name        = "speaker-diarization"
+version     = "0.1.0"
+language    = "rust"
+description = "Speaker diarization via pyannote-rs (ONNX) — RemoteMedia SDK Path 3 loadable plugin"
+
+[rust]
+node_types    = ["SpeakerDiarizationNode"]
+asset_pattern = "lib{name}-{arch}-{os}.{ext}"

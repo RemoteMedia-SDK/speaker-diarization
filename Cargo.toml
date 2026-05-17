@@ -1,0 +1,55 @@
+[package]
+name = "speaker-diarization-plugin"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Standalone workspace — fully decoupled from any parent so the plugin's
+# `ort` pin doesn't unify against the host's, and so this plugin can
+# pull `pyannote-rs` from the matbeedotcom fork without affecting any
+# other crate in any other tree.
+[workspace]
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+debug = 0
+
+[profile.dev]
+opt-level = 1
+debug = 1
+incremental = true
+
+[lib]
+name = "speaker_diarization_plugin"
+crate-type = ["cdylib"]
+
+# Path-3 hand-rolled plugin: depends ONLY on the skinny
+# `remotemedia-plugin-sdk` umbrella. Does NOT link `remotemedia-core` —
+# that's what lets SpeakerDiarizationNode + its `ort` + pyannote
+# dependencies be removed from the host's core crate without changing
+# this plugin's surface.
+[dependencies]
+remotemedia-plugin-sdk = { git = "https://github.com/RemoteMedia-SDK/remotemedia-sdk.git", branch = "main" }
+# `abi_stable` must be in the plugin's direct dep set so the attribute
+# macros expanded by `plugin_export!()` (`#[sabi_extern_fn]`,
+# `#[export_root_module]`) can resolve `::abi_stable` at the crate root.
+abi_stable = "0.11"
+
+async-trait = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["sync", "rt-multi-thread", "macros"] }
+tracing = "0.1"
+
+# pyannote-rs from the matbeedotcom fork branch `ort-rc12`. This is the
+# fork the host workspace itself used before this extraction — it bumps
+# `ndarray` 0.16 → 0.17 and aligns with `ort = 2.0.0-rc.12` so the
+# `!Sync` operator changes don't break pyannote's eyre-based error
+# wrapping. Using the same fork here guarantees bit-for-bit behavioural
+# parity with the previous in-host implementation.
+pyannote-rs = { git = "https://github.com/matbeedotcom/pyannote-rs", branch = "ort-rc12" }
+
+# Pin `ort` directly to match the matbeedotcom fork's expected version.
+# Standalone workspace prevents cross-tree unification anyway.
+ort = { version = "=2.0.0-rc.12", features = ["half", "download-binaries"] }
