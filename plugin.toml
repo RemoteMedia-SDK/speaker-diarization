@@ -13,7 +13,7 @@
 
 [plugin]
 name        = "speaker-diarization"
-version     = "0.1.0"
+version     = "0.5.0"
 language    = "rust"
 description = "Speaker diarization via pyannote-rs (ONNX) — RemoteMedia SDK Path 3 loadable plugin"
 
